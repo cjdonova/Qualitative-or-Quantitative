@@ -29,7 +29,7 @@
       font-family: var(--font-main);
     }
     .wrap {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 24px 16px 60px;
     }
@@ -44,7 +44,6 @@
       padding: 6px 10px;
       border-radius: 999px;
       font-size: 12px;
-      letter-spacing: .3px;
       margin-left:8px;
     }
     .small {
@@ -85,6 +84,38 @@
       box-shadow: var(--shadow);
       margin-bottom: 18px;
     }
+    /* Drag-and-drop styles */
+    .targets{display:grid; gap:12px; grid-template-columns:repeat(3,1fr);}
+    .target{min-height:86px;border:2px dashed #cbd5e1;border-radius:12px;padding:10px; display:flex;flex-direction:column;gap:8px;transition:.2s; background:var(--card);}
+    .target.active{background:var(--focus);}
+    .bin-title{font-weight:600;color:var(--brand);}
+    .draggable{user-select:none; padding:10px 12px;border-radius:12px;background:var(--accent);border:1px solid #cbd5e1; box-shadow:0 6px 14px rgba(0,0,0,.06);transition:box-shadow .2s,transform .2s;margin-bottom:4px;}
+    .draggable:focus{outline:2px solid var(--focus);}
+    .draggable[aria-grabbed="true"]{outline:2px solid var(--brand);background:var(--brand);color:#fff;box-shadow:0 0 0 4px #bae6fd;transform:scale(1.02);}
+    .stack{display:flex;flex-direction:column;gap:8px}
+    button, .btn {
+      cursor:pointer;
+      border:1px solid #cbd5e1;
+      background:var(--accent);
+      color:var(--ink);
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:16px;
+      transition:.15s;
+    }
+    button:hover, .btn:hover {
+      border-color:var(--brand);
+      background:var(--focus);
+    }
+    .footer { margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .good { color: var(--ok);}
+    .bad { color: var(--bad);}
+    .score { font-weight: 700; }
+    .pill { font-size:15px;}
+    .reset-btn {
+      margin-left: auto;
+    }
+    /* Quiz styles for reflection */
     .quiz-q {
       font-size:1.1rem;
       margin-bottom:8px;
@@ -115,34 +146,6 @@
       background:var(--ok);
       color:#fff;
     }
-    .footer {
-      margin-top:12px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .good { color: var(--ok); }
-    .bad { color: var(--bad); }
-    .score { font-weight: 700; }
-    .pill { font-size:15px;}
-    button, .btn {
-      cursor:pointer;
-      border:1px solid #cbd5e1;
-      background:var(--accent);
-      color:var(--ink);
-      padding:10px 14px;
-      border-radius:12px;
-      font-size:16px;
-      transition:.15s;
-    }
-    button:hover,.btn:hover{
-      border-color:var(--progress);
-      background:var(--focus);
-    }
-    .reset-btn {
-      margin-left: auto;
-    }
   </style>
 </head>
 <body>
@@ -155,109 +158,137 @@
       <span class="pill">Level: <span id="levelNow">1</span>/6</span>
     </div>
   </header>
-  <div class="progress"><div id="bar"></div></div>
-  
-  <!-- Level 1: Sorting Challenge -->
+  <div class="progress"><div id="bar" style="background:linear-gradient(90deg,#60a5fa,#22c55e);height:100%;width:0"></div></div>
+  <!-- Level 1: Drag-and-drop Sorting Challenge -->
   <section class="card level active" id="lvl1">
-    <h2>Level 1 — Sorting Challenge</h2>
-    <div class="small">Drag each statement into the correct bin. (Demo: quiz format for sample)</div>
-    <form id="quiz1"></form>
+    <h2>Level 1 — Sorting Challenge: Quantitative vs Qualitative</h2>
+    <div class="small">Drag each statement into the correct bin.<br>
+      Keyboard: <span style="font-family:monospace;">Tab</span> to focus, <span style="font-family:monospace;">Space</span> to pick up/drop, arrow keys to move between bins.
+    </div>
+    <div class="targets" id="bins" role="list">
+      <div class="target" data-bin="Quantitative" aria-label="Quantitative bin">
+        <header><span class="bin-title">Quantitative</span></header>
+        <div class="stack" aria-live="polite"></div>
+      </div>
+      <div class="target" data-bin="Qualitative" aria-label="Qualitative bin">
+        <header><span class="bin-title">Qualitative</span></header>
+        <div class="stack" aria-live="polite"></div>
+      </div>
+      <div class="target" data-bin="Both" aria-label="Both bin">
+        <header><span class="bin-title">Both</span></header>
+        <div class="stack" aria-live="polite"></div>
+      </div>
+    </div>
+    <div id="statements" class="row" style="margin-top:14px; flex-wrap:wrap"></div>
     <div class="footer">
       <button id="checkL1">Check answers</button>
-      <button id="resetL1" class="btn reset-btn">Reset</button>
+      <button id="resetL1" class="btn">Reset</button>
       <span id="l1Msg" class="small"></span>
     </div>
+    <details style="margin-top:10px"><summary>Instructor notes</summary>
+      <div class="note">Statements (editable in code): measurable variables (Quant), lived experiences (Qual), averages/percentages/correlations (Quant), how/why in context (Qual), charts/graphs/significance (Quant), <em>and you may add more</em>. The <strong>Both</strong> bin is included for your future expansions (e.g., mixed methods, reporting visuals for qual summaries, etc.).</div>
+    </details>
   </section>
-  <!-- Level 2: Research Pathway Quiz -->
+  <!-- Level 2: Steps sequencing + applied example -->
   <section class="card level" id="lvl2">
-    <h2>Level 2 — Research Pathway Quiz</h2>
-    <form id="quiz2">
-      <div class="quiz-q">Which of the following is typically the <strong>first</strong> step in a quantitative research study?</div>
-      <div class="quiz-choices">
-        <input type="radio" id="q2a" name="q2" value="a"><label for="q2a">Collect data using appropriate instruments</label>
-        <input type="radio" id="q2b" name="q2" value="b"><label for="q2b">Identify a research problem or question</label>
-        <input type="radio" id="q2c" name="q2" value="c"><label for="q2c">Analyze the data using statistical techniques</label>
-      </div>
-      <div class="quiz-q">What is the main purpose of reviewing literature in research?</div>
-      <div class="quiz-choices">
-        <input type="radio" id="q2d" name="q3" value="a"><label for="q2d">To define hypotheses and understand context</label>
-        <input type="radio" id="q2e" name="q3" value="b"><label for="q2e">To collect primary data</label>
-        <input type="radio" id="q2f" name="q3" value="c"><label for="q2f">To publish results</label>
-      </div>
-    </form>
+    <h2>Level 2 — Research Pathway Puzzle</h2>
+    <div class="small">Put steps in the correct order, then add a concrete example from a public‑health context.</div>
+    <div class="row" id="stepsRow" style="flex-wrap:wrap"></div>
+    <div class="row" style="margin-top:12px">
+      <div class="pill small" style="background:var(--card); border:1px solid #cbd5e1;">Example: <span id="exampleShow"></span></div>
+      <input id="exampleText" type="text" placeholder="e.g., Analyze BMI data in SFUSD" style="flex:1;min-width:180px;margin-left:8px;" />
+    </div>
     <div class="footer">
-      <button id="checkL2">Check answers</button>
-      <button id="resetL2" class="btn reset-btn">Reset</button>
+      <button id="checkL2">Check order</button>
+      <button id="resetL2" class="btn">Reset</button>
       <span id="l2Msg" class="small"></span>
     </div>
   </section>
-  <!-- Level 3: Variable Detective Quiz -->
+  <!-- Level 3: Variable Detective -->
   <section class="card level" id="lvl3">
     <h2>Level 3 — Variable Detective</h2>
-    <form id="quiz3">
-      <div class="quiz-q">In the question: <em>“Does <strong>housing instability</strong> affect rates of <strong>depression</strong> among low‑income adults?”</em><br> What is the <strong>independent variable</strong>?</div>
-      <div class="quiz-choices">
-        <input type="radio" id="q3a" name="q4" value="a"><label for="q3a">Depression</label>
-        <input type="radio" id="q3b" name="q4" value="b"><label for="q3b">Housing instability</label>
-        <input type="radio" id="q3c" name="q4" value="c"><label for="q3c">Low-income status</label>
-      </div>
-      <div class="quiz-q">What type of variable is <strong>depression</strong> in this context?</div>
-      <div class="quiz-choices">
-        <input type="radio" id="q3d" name="q5" value="a"><label for="q3d">Independent variable</label>
-        <input type="radio" id="q3e" name="q5" value="b"><label for="q3e">Dependent variable</label>
-        <input type="radio" id="q3f" name="q5" value="c"><label for="q3f">Confounder</label>
-      </div>
-    </form>
+    <div class="small">Highlight the variables in the research question and classify them.</div>
+    <blockquote style="margin:0;padding:12px 14px;background:var(--card);border:1px solid #cbd5e1;border-radius:12px">
+      “Does <strong>housing instability</strong> affect rates of <strong>depression</strong> among low‑income adults?”
+    </blockquote>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn" data-tag="Independent">Mark Independent</button>
+      <button class="btn" data-tag="Dependent">Mark Dependent</button>
+      <button class="btn" data-tag="Exposure">Mark Exposure</button>
+      <button class="btn" data-tag="Outcome">Mark Outcome</button>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <span class="small">Variable types:</span>
+      <select id="typeInd"><option value="">Independent type…</option><option>Categorical</option><option>Ordinal</option><option>Continuous</option></select>
+      <select id="typeDep"><option value="">Dependent type…</option><option>Categorical</option><option>Ordinal</option><option>Continuous</option></select>
+    </div>
     <div class="footer">
-      <button id="checkL3">Check answers</button>
-      <button id="resetL3" class="btn reset-btn">Reset</button>
+      <button id="checkL3">Check</button>
+      <button id="resetL3" class="btn">Reset</button>
       <span id="l3Msg" class="small"></span>
     </div>
   </section>
-  <!-- Level 4: Study Design Quiz -->
+  <!-- Level 4: Study Design Showdown -->
   <section class="card level" id="lvl4">
     <h2>Level 4 — Study Design Showdown</h2>
-    <form id="quiz4">
-      <div class="quiz-q">A survey of 1,000 teens about sleep habits and anxiety levels is which type of study?</div>
-      <div class="quiz-choices">
-        <input type="radio" id="q4a" name="q6" value="a"><label for="q4a">Cross-Sectional</label>
-        <input type="radio" id="q4b" name="q6" value="b"><label for="q4b">Cohort</label>
-        <input type="radio" id="q4c" name="q6" value="c"><label for="q4c">Case-Control</label>
-      </div>
-      <div class="quiz-q">A randomized controlled trial primarily provides:</div>
-      <div class="quiz-choices">
-        <input type="radio" id="q4d" name="q7" value="a"><label for="q4d">Strong internal validity</label>
-        <input type="radio" id="q4e" name="q7" value="b"><label for="q4e">Observational data</label>
-        <input type="radio" id="q4f" name="q7" value="c"><label for="q4f">Long-term incidence rates</label>
-      </div>
-    </form>
+    <table style="width:100%;border-collapse:collapse" id="designTbl" aria-label="study design table">
+      <thead><tr><th>Scenario</th><th>Study Type</th><th>Randomized?</th><th>Strength</th><th>Limitation</th></tr></thead>
+      <tbody>
+        <tr data-key="walkRCT">
+          <td>Researchers assign 100 people to a walking program vs control to study diabetes risk.</td>
+          <td><select><option value="">Choose…</option><option>Randomized Controlled Trial</option><option>Cohort</option><option>Case-Control</option><option>Cross-Sectional</option><option>Quasi-Experimental</option></select></td>
+          <td><select><option value="">Choose…</option><option>Yes</option><option>No</option></select></td>
+          <td><input type="text" placeholder="e.g., strong internal validity"/></td>
+          <td><input type="text" placeholder="e.g., cost, ethics, generalizability"/></td>
+        </tr>
+        <tr data-key="teenSurvey">
+          <td>Survey of 1,000 teens about sleep habits and anxiety levels.</td>
+          <td><select><option value="">Choose…</option><option>Randomized Controlled Trial</option><option>Cohort</option><option>Case-Control</option><option>Cross-Sectional</option><option>Quasi-Experimental</option></select></td>
+          <td><select><option value="">Choose…</option><option>Yes</option><option>No</option></select></td>
+          <td><input type="text" placeholder="e.g., quick snapshot, prevalence"/></td>
+          <td><input type="text" placeholder="e.g., no temporality, self-report bias"/></td>
+        </tr>
+        <tr data-key="airAsthma">
+          <td>Longitudinal study tracks low-income families for 5 years: air‑pollution exposure and asthma.</td>
+          <td><select><option value="">Choose…</option><option>Randomized Controlled Trial</option><option>Cohort</option><option>Case-Control</option><option>Cross-Sectional</option><option>Quasi-Experimental</option></select></td>
+          <td><select><option value="">Choose…</option><option>Yes</option><option>No</option></select></td>
+          <td><input type="text" placeholder="e.g., temporality, incidence"/></td>
+          <td><input type="text" placeholder="e.g., attrition, cost"/></td>
+        </tr>
+      </tbody>
+    </table>
     <div class="footer">
-      <button id="checkL4">Check answers</button>
-      <button id="resetL4" class="btn reset-btn">Reset</button>
+      <button id="checkL4">Check</button>
+      <button id="resetL4" class="btn">Reset</button>
       <span id="l4Msg" class="small"></span>
     </div>
   </section>
-  <!-- Level 5: Sampling Quiz -->
+  <!-- Level 5: Sampling Sprint -->
   <section class="card level" id="lvl5">
     <h2>Level 5 — Sampling Sprint</h2>
-    <form id="quiz5">
-      <div class="quiz-q">Which sampling strategy is <strong>probability-based</strong>?</div>
-      <div class="quiz-choices">
-        <input type="radio" id="q5a" name="q8" value="a"><label for="q5a">Convenience sampling</label>
-        <input type="radio" id="q5b" name="q8" value="b"><label for="q5b">Simple random sampling</label>
-        <input type="radio" id="q5c" name="q8" value="c"><label for="q5c">Snowball sampling</label>
+    <div class="row" style="flex-wrap:wrap">
+      <div class="card" style="flex:1;min-width:280px">
+        <h3>Sort into Probability vs Non‑Probability</h3>
+        <div class="targets" id="sampleBins">
+          <div class="target" data-bin="Probability"><header><span class="bin-title">Probability</span></header><div class="stack"></div></div>
+          <div class="target" data-bin="Non-Probability"><header><span class="bin-title">Non‑Probability</span></header><div class="stack"></div></div>
+          <div class="target" data-bin="Unsorted"><header><span class="bin-title">Unsorted</span></header><div class="stack"></div></div>
+        </div>
+        <div id="sampleCards" class="row" style="margin-top:10px;flex-wrap:wrap"></div>
       </div>
-      <div class="quiz-q">What is a limitation of <strong>stratified sampling</strong>?</div>
-      <div class="quiz-choices">
-        <input type="radio" id="q5d" name="q9" value="a"><label for="q5d">Requires information about strata</label>
-        <input type="radio" id="q5e" name="q9" value="b"><label for="q5e">High bias</label>
-        <input type="radio" id="q5f" name="q9" value="c"><label for="q5f">Cannot generalize</label>
+      <div class="card" style="flex:1;min-width:280px">
+        <h3>Advantages & Limitations</h3>
+        <table style="width:100%;border-collapse:collapse" id="samTbl">
+          <thead><tr><th>Strategy</th><th>Advantage</th><th>Limitation</th></tr></thead>
+          <tbody>
+            <tr data-k="Simple random sampling"><td>Simple random sampling</td><td><input type="text" placeholder="unbiased selection"/></td><td><input type="text" placeholder="sampling frame needed"/></td></tr>
+            <tr data-k="Stratified sampling"><td>Stratified sampling</td><td><input type="text" placeholder="ensures subgroup representation"/></td><td><input type="text" placeholder="requires strata info"/></td></tr>
+            <tr data-k="Convenience sampling"><td>Convenience sampling</td><td><input type="text" placeholder="fast, low cost"/></td><td><input type="text" placeholder="high bias, low generalizability"/></td></tr>
+            <tr data-k="Snowball sampling"><td>Snowball sampling</td><td><input type="text" placeholder="reaches hidden populations"/></td><td><input type="text" placeholder="network bias"/></td></tr>
+          </tbody>
+        </table>
+        <div class="footer"><button id="checkL5">Check</button> <button id="resetL5" class="btn">Reset</button> <span id="l5Msg" class="small"></span></div>
       </div>
-    </form>
-    <div class="footer">
-      <button id="checkL5">Check answers</button>
-      <button id="resetL5" class="btn reset-btn">Reset</button>
-      <span id="l5Msg" class="small"></span>
     </div>
   </section>
   <!-- Level 6: Reflection Quiz -->
@@ -283,7 +314,7 @@
     </form>
     <div class="footer">
       <button id="checkL6">Check answers</button>
-      <button id="resetL6" class="btn reset-btn">Reset</button>
+      <button id="resetL6" class="btn">Reset</button>
       <span id="l6Msg" class="small"></span>
     </div>
     <details style="margin-top:8px"><summary>Tip for instructors</summary>
@@ -304,7 +335,7 @@
   function setLevel(n){
     level = Math.min(maxLevel, Math.max(1, n));
     levelEl.textContent = level;
-    barEl.style.width = ((level-1)/(maxLevel))*100 + '%';
+    barEl.style.width = ((level-1)/(maxLevel-1))*100 + '%';
     revealLevels();
   }
   function revealLevels(){
@@ -313,133 +344,270 @@
       if(sec) sec.classList.toggle('active', i===level);
     }
   }
-  // Level 1
-  const l1Questions = [
-    {text:'Focuses on measurable variables using numerical data', ans:'Quantitative'},
-    {text:'Explores lived experiences through open-ended interviews', ans:'Qualitative'},
-    {text:'Results are often reported as averages, percentages, or correlations', ans:'Quantitative'},
-    {text:'Seeks to understand how and why phenomena occur in specific contexts', ans:'Qualitative'},
-    {text:'May include charts, graphs, and statistical significance testing', ans:'Quantitative'},
-    {text:'Combines numbers with open-ended responses in the same study', ans:'Both'},
-    {text:'Uses visual summaries of qualitative themes', ans:'Both'}
+
+  // Level 1 drag-and-drop
+  const l1Statements = [
+    {id:'s1', text:'Focuses on measurable variables using numerical data', ans:'Quantitative'},
+    {id:'s2', text:'Explores lived experiences through open-ended interviews', ans:'Qualitative'},
+    {id:'s3', text:'Results are often reported as averages, percentages, or correlations', ans:'Quantitative'},
+    {id:'s4', text:'Seeks to understand how and why phenomena occur in specific contexts', ans:'Qualitative'},
+    {id:'s5', text:'May include charts, graphs, and statistical significance testing', ans:'Quantitative'},
+    {id:'s6', text:'Combines numbers with open-ended responses in the same study', ans:'Both'},
+    {id:'s7', text:'Uses visual summaries of qualitative themes', ans:'Both'}
   ];
-  const bins = ['Quantitative','Qualitative','Both'];
-  function renderQuiz1(){
-    const f = document.getElementById('quiz1');
-    f.innerHTML = '';
-    l1Questions.forEach((q,i)=>{
-      f.innerHTML += `
-      <div class="quiz-q">${q.text}</div>
-      <div class="quiz-choices">
-        ${bins.map(bin => `<input type="radio" id="l1${i}_${bin}" name="l1_${i}" value="${bin}">
-        <label for="l1${i}_${bin}">${bin}</label>`).join('')}
-      </div>`;
+  const bins = Array.from(document.querySelectorAll('#bins .target'));
+  const pool = document.getElementById('statements');
+  window.l1Bins = {};
+  function renderL1(){
+    // Clear all bins and pool
+    document.querySelectorAll('.stack').forEach(stack=>stack.innerHTML='');
+    pool.innerHTML='';
+    l1Statements.forEach(item=>{
+      const assigned = window.l1Bins[item.id] || null;
+      const card = document.createElement('button');
+      card.className='draggable'; card.type='button'; card.textContent=item.text; card.setAttribute('draggable','true'); card.setAttribute('aria-grabbed','false'); card.dataset.id=item.id;
+      if(assigned){
+        const t = document.querySelector(`.target[data-bin="${assigned}"] .stack`);
+        t.appendChild(card);
+      } else {
+        pool.appendChild(card);
+      }
     });
   }
-  renderQuiz1();
+  renderL1();
+  function saveBin(id, bin){ window.l1Bins[id] = bin; }
 
+  let dragEl=null;
+  document.addEventListener('dragstart', e=>{
+    const el = e.target.closest('.draggable'); if(!el) return; dragEl = el; el.setAttribute('aria-grabbed','true'); e.dataTransfer.effectAllowed='move'; });
+  document.addEventListener('dragend', e=>{ if(dragEl){ dragEl.setAttribute('aria-grabbed','false'); dragEl=null; }});
+  bins.forEach(b=>{
+    b.addEventListener('dragover', e=>{ e.preventDefault(); b.classList.add('active'); });
+    b.addEventListener('dragleave', e=>{ b.classList.remove('active'); });
+    b.addEventListener('drop', e=>{ e.preventDefault(); b.classList.remove('active');
+      if(!dragEl) return;
+      b.querySelector('.stack').appendChild(dragEl);
+      saveBin(dragEl.dataset.id, b.dataset.bin);
+      dragEl.focus();
+    });
+  });
+  // Keyboard move between bins
+  document.addEventListener('keydown', e=>{
+    const el = document.activeElement.closest('.draggable');
+    if(!el) return;
+    if(e.code==='Space'){ e.preventDefault(); el.setAttribute('aria-grabbed', el.getAttribute('aria-grabbed')==='true'?'false':'true'); return; }
+    if(el.getAttribute('aria-grabbed')==='true' && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
+      e.preventDefault();
+      const order = ['Quantitative','Qualitative','Both'];
+      const cur = (el.parentElement.closest('.target')||{dataset:{bin:'pool'}}).dataset.bin;
+      let idx = Math.max(0, order.indexOf(cur));
+      if(['ArrowRight','ArrowDown'].includes(e.key)) idx = Math.min(order.length-1, idx+1); else idx = Math.max(0, idx-1);
+      const target = document.querySelector(`.target[data-bin="${order[idx]}"] .stack`);
+      if(target){ target.appendChild(el); saveBin(el.dataset.id, order[idx]); target.parentElement.classList.add('active'); setTimeout(()=>target.parentElement.classList.remove('active'),300); el.focus(); }
+    }
+  });
   document.getElementById('checkL1').onclick = function(){
-    let correct = 0;
-    l1Questions.forEach((q,i)=>{
-      let checked = document.querySelector(`input[name="l1_${i}"]:checked`);
-      if(checked && checked.value === q.ans) correct++;
+    let correct=0, total=l1Statements.length;
+    l1Statements.forEach(item=>{
+      const chosen = window.l1Bins[item.id];
+      if(chosen===item.ans){ correct++; }
     });
     let msg = document.getElementById('l1Msg');
-    if(correct === l1Questions.length){
+    if(correct === total){
       msg.innerHTML = `<span class="good">All correct!</span>`;
       bump(5);
       setLevel(2);
     } else {
-      msg.innerHTML = `<span class="bad">${correct}/${l1Questions.length} correct. Try again!</span>`;
+      msg.innerHTML = `<span class="bad">${correct}/${total} correct. Try again!</span>`;
       bump(-1);
     }
   };
   document.getElementById('resetL1').onclick = function(){
-    renderQuiz1();
+    window.l1Bins = {};
+    renderL1();
     document.getElementById('l1Msg').textContent='';
   };
 
-  // Level 2
+  // Level 2: Steps sequencing
+  const steps = [
+    'Identify a research problem or question',
+    'Review literature and define hypotheses',
+    'Select study design and methods',
+    'Collect data using appropriate instruments',
+    'Analyze the data using statistical techniques',
+    'Interpret the results and communicate findings'
+  ];
+  const correctOrder = steps.slice();
+  let savedOrder = steps.slice();
+  function drawSteps(){
+    const stepsRow = document.getElementById('stepsRow');
+    stepsRow.innerHTML = '';
+    savedOrder.forEach((t,i)=>{
+      const btn = document.createElement('button');
+      btn.className='draggable'; btn.type='button';
+      btn.textContent = `${i+1}. ${t}`;
+      btn.setAttribute('draggable','true');
+      btn.dataset.idx=i;
+      stepsRow.appendChild(btn);
+    });
+  }
+  drawSteps();
+  let dragIdx=null;
+  document.getElementById('stepsRow').addEventListener('dragstart', e=>{
+    const el=e.target.closest('.draggable'); if(!el) return; dragIdx = Number(el.dataset.idx); });
+  document.getElementById('stepsRow').addEventListener('dragover', e=> e.preventDefault());
+  document.getElementById('stepsRow').addEventListener('drop', e=>{
+    e.preventDefault();
+    const el = e.target.closest('.draggable'); if(!el) return; const dropIdx = Number(el.dataset.idx);
+    const item = savedOrder.splice(dragIdx,1)[0]; savedOrder.splice(dropIdx,0,item);
+    drawSteps();
+  });
   document.getElementById('checkL2').onclick = function(){
-    let q2 = document.querySelector('input[name="q2"]:checked');
-    let q3 = document.querySelector('input[name="q3"]:checked');
-    let c2 = (q2 && q2.value === 'b');
-    let c3 = (q3 && q3.value === 'a');
+    document.getElementById('exampleShow').textContent = document.getElementById('exampleText').value;
+    const ok = JSON.stringify(savedOrder)===JSON.stringify(correctOrder);
     let msg = document.getElementById('l2Msg');
-    if(c2 && c3){
-      msg.innerHTML = `<span class="good">Correct!</span>`;
+    if(ok){
+      msg.innerHTML = `<span class="good">Correct order!</span>`;
       bump(5);
       setLevel(3);
     } else {
-      msg.innerHTML = `<span class="bad">Try again.</span>`;
+      msg.innerHTML = `<span class="bad">Some steps are out of order. Try again!</span>`;
       bump(-1);
     }
   };
   document.getElementById('resetL2').onclick = function(){
-    document.getElementById('quiz2').reset();
+    savedOrder = steps.slice();
+    drawSteps();
+    document.getElementById('exampleText').value = '';
+    document.getElementById('exampleShow').textContent = '';
     document.getElementById('l2Msg').textContent='';
   };
 
-  // Level 3
+  // Level 3: Variable detective
+  let marks = {Independent:'housing instability', Dependent:'depression', Exposure:'housing instability', Outcome:'depression'};
+  let typeInd = 'Categorical';
+  let typeDep = 'Categorical';
+  document.getElementById('typeInd').value = typeInd;
+  document.getElementById('typeDep').value = typeDep;
+  document.querySelectorAll('#lvl3 .btn').forEach(b=> b.addEventListener('click',()=>{
+    const role = b.dataset.tag;
+    const val = prompt(`Highlight text for ${role}:`, marks[role]||'');
+    if(val!==null){ marks[role]=val; }
+  }));
+  document.getElementById('typeInd').addEventListener('change', e=>{ typeInd=e.target.value; });
+  document.getElementById('typeDep').addEventListener('change', e=>{ typeDep=e.target.value; });
   document.getElementById('checkL3').onclick = function(){
-    let q4 = document.querySelector('input[name="q4"]:checked');
-    let q5 = document.querySelector('input[name="q5"]:checked');
-    let c4 = (q4 && q4.value === 'b');
-    let c5 = (q5 && q5.value === 'b');
+    const correct = (marks.Independent?.toLowerCase().includes('housing') && marks.Dependent?.toLowerCase().includes('depress')) && (marks.Exposure?.toLowerCase().includes('housing')) && (marks.Outcome?.toLowerCase().includes('depress')) && typeInd && typeDep;
     let msg = document.getElementById('l3Msg');
-    if(c4 && c5){
-      msg.innerHTML = `<span class="good">Correct!</span>`;
+    if(correct){
+      msg.innerHTML = '<span class="good">Correct!</span>';
       bump(5);
       setLevel(4);
     } else {
-      msg.innerHTML = `<span class="bad">Try again.</span>`;
+      msg.innerHTML = '<span class="bad">Check which concept is the exposure vs. the outcome and select variable types.</span>';
       bump(-1);
     }
   };
   document.getElementById('resetL3').onclick = function(){
-    document.getElementById('quiz3').reset();
+    marks = {Independent:'housing instability', Dependent:'depression', Exposure:'housing instability', Outcome:'depression'};
+    typeInd = 'Categorical';
+    typeDep = 'Categorical';
+    document.getElementById('typeInd').value = typeInd;
+    document.getElementById('typeDep').value = typeDep;
     document.getElementById('l3Msg').textContent='';
   };
 
-  // Level 4
+  // Level 4: Study Design
+  const keys = {
+    walkRCT:{type:'Randomized Controlled Trial', rand:'Yes'},
+    teenSurvey:{type:'Cross-Sectional', rand:'No'},
+    airAsthma:{type:'Cohort', rand:'No'}
+  };
   document.getElementById('checkL4').onclick = function(){
-    let q6 = document.querySelector('input[name="q6"]:checked');
-    let q7 = document.querySelector('input[name="q7"]:checked');
-    let c6 = (q6 && q6.value === 'a');
-    let c7 = (q7 && q7.value === 'a');
+    let ok=0, total=3;
+    document.querySelectorAll('#designTbl tbody tr').forEach(tr=>{
+      const k = tr.dataset.key;
+      const t = tr.querySelector('select').value;
+      const r = tr.querySelectorAll('select')[1].value;
+      if(t===keys[k].type && r===keys[k].rand) ok++;
+    });
     let msg = document.getElementById('l4Msg');
-    if(c6 && c7){
-      msg.innerHTML = `<span class="good">Correct!</span>`;
+    if(ok===total){
+      msg.innerHTML = '<span class="good">All scenarios correctly classified.</span>';
       bump(5);
       setLevel(5);
-    } else {
-      msg.innerHTML = `<span class="bad">Try again.</span>`;
+    }else{
+      msg.innerHTML = `<span class="bad">${ok}/${total} correct. Re-check design vs. temporality & randomization.</span>`;
       bump(-1);
     }
   };
   document.getElementById('resetL4').onclick = function(){
-    document.getElementById('quiz4').reset();
+    document.querySelectorAll('#designTbl tbody tr').forEach(tr=>{
+      tr.querySelector('select').selectedIndex=0;
+      tr.querySelectorAll('select')[1].selectedIndex=0;
+      tr.querySelectorAll('input')[0].value='';
+      tr.querySelectorAll('input')[1].value='';
+    });
     document.getElementById('l4Msg').textContent='';
   };
 
-  // Level 5
+  // Level 5: Sampling Sprint (drag-and-drop)
+  const sampleCards = [
+    {id:'sr', text:'Simple random sampling', ans:'Probability'},
+    {id:'str', text:'Stratified sampling', ans:'Probability'},
+    {id:'conv', text:'Convenience sampling', ans:'Non-Probability'},
+    {id:'snow', text:'Snowball sampling', ans:'Non-Probability'}
+  ];
+  window.sampleBins = {};
+  function renderL5(){
+    // Clear bins and pool
+    document.querySelectorAll('#sampleBins .stack').forEach(stack=>stack.innerHTML='');
+    const samplePool = document.getElementById('sampleCards');
+    samplePool.innerHTML='';
+    sampleCards.forEach(c=>{
+      const assigned = window.sampleBins[c.id] || 'Unsorted';
+      const el = document.createElement('button');
+      el.className='draggable'; el.type='button'; el.textContent=c.text; el.dataset.id=c.id; el.setAttribute('draggable','true');
+      if(assigned==='Unsorted') samplePool.appendChild(el); else { document.querySelector(`#sampleBins .target[data-bin="${assigned}"] .stack`).appendChild(el); }
+    });
+  }
+  renderL5();
+  document.querySelectorAll('#sampleBins .target').forEach(b=>{
+    b.addEventListener('dragover', e=> e.preventDefault());
+    b.addEventListener('drop', e=>{
+      e.preventDefault();
+      const el = document.querySelector('#lvl5 .draggable[aria-grabbed="true"]');
+      if(!el) return;
+      b.querySelector('.stack').appendChild(el);
+      window.sampleBins[el.dataset.id] = b.dataset.bin;
+      el.setAttribute('aria-grabbed','false');
+    });
+  });
+  document.addEventListener('dragstart', e=>{
+    const el=e.target.closest('#lvl5 .draggable'); if(el) el.setAttribute('aria-grabbed','true');
+  });
+  document.addEventListener('dragend', e=>{
+    const el=e.target.closest('#lvl5 .draggable'); if(el) el.setAttribute('aria-grabbed','false');
+  });
   document.getElementById('checkL5').onclick = function(){
-    let q8 = document.querySelector('input[name="q8"]:checked');
-    let q9 = document.querySelector('input[name="q9"]:checked');
-    let c8 = (q8 && q8.value === 'b');
-    let c9 = (q9 && q9.value === 'a');
+    let correct = 0, total = sampleCards.length;
+    sampleCards.forEach(c=>{
+      const chosen = window.sampleBins[c.id] || 'Unsorted';
+      if(chosen===c.ans) correct++;
+    });
     let msg = document.getElementById('l5Msg');
-    if(c8 && c9){
-      msg.innerHTML = `<span class="good">Correct! Next: Reflection Quiz</span>`;
+    if(correct===total){
+      msg.innerHTML = `<span class="good">All sorted correctly! Next: Reflection Quiz</span>`;
       bump(5);
       setLevel(6);
     } else {
-      msg.innerHTML = `<span class="bad">Try again.</span>`;
+      msg.innerHTML = `<span class="bad">${correct}/${total} sorted correctly. Try again!</span>`;
       bump(-1);
     }
   };
   document.getElementById('resetL5').onclick = function(){
-    document.getElementById('quiz5').reset();
+    window.sampleBins = {};
+    renderL5();
     document.getElementById('l5Msg').textContent='';
   };
 
@@ -466,7 +634,7 @@
   // Initial HUD
   scoreEl.textContent = score;
   levelEl.textContent = level;
-  barEl.style.width = ((level-1)/(maxLevel))*100 + '%';
+  barEl.style.width = ((level-1)/(maxLevel-1))*100 + '%';
   revealLevels();
 })();
 </script>
