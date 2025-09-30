@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Quant or Qual? — Interactive Quiz Game</title>
+  <title>Quant or Qual? — Interactive Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
@@ -14,7 +14,6 @@
       --muted:#7b8794;
       --brand:#2563eb;
       --ok:#22c55e;
-      --warn:#f59e0b;
       --bad:#ef4444;
       --card:#f1f5f9;
       --accent:#e0e7ef;
@@ -125,7 +124,6 @@
     }
     .good { color: var(--ok); }
     .bad { color: var(--bad); }
-    .hint { color: var(--brand);}
     .score { font-weight: 700; }
     .pill { font-size:15px;}
     button, .btn {
@@ -150,18 +148,19 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Quant or Qual? <span class="badge">Quiz Edition</span></h1>
-    <div class="small">Practice distinguishing quantitative vs qualitative research, variables, designs, and sampling with interactive questions.</div>
+    <h1>Quant or Qual? <span class="badge">Interactive Game</span></h1>
+    <div class="small">Distinguish quantitative vs qualitative research, variables, designs, and sampling with interactive modules.</div>
     <div style="margin-top:8px;">
       <span class="pill">Score: <span id="score">0</span></span>
-      <span class="pill">Level: <span id="levelNow">1</span>/5</span>
+      <span class="pill">Level: <span id="levelNow">1</span>/6</span>
     </div>
   </header>
   <div class="progress"><div id="bar"></div></div>
+  
   <!-- Level 1: Sorting Challenge -->
   <section class="card level active" id="lvl1">
     <h2>Level 1 — Sorting Challenge</h2>
-    <div class="small">For each statement, select whether it fits Quantitative, Qualitative, or Both.</div>
+    <div class="small">Drag each statement into the correct bin. (Demo: quiz format for sample)</div>
     <form id="quiz1"></form>
     <div class="footer">
       <button id="checkL1">Check answers</button>
@@ -261,13 +260,43 @@
       <span id="l5Msg" class="small"></span>
     </div>
   </section>
+  <!-- Level 6: Reflection Quiz -->
+  <section class="card level" id="lvl6">
+    <h2>Reflection: Observational vs. RCT Designs (Quiz)</h2>
+    <form id="quiz6">
+      <div class="quiz-q">
+        Why might a researcher choose an observational (non-randomized) design over an RCT? (Select the BEST reason)
+      </div>
+      <div class="quiz-choices">
+        <input type="radio" id="q6a" name="q10" value="a"><label for="q6a">Observational studies always have higher internal validity than RCTs</label>
+        <input type="radio" id="q6b" name="q10" value="b"><label for="q6b">RCTs may be unethical, impractical, or too expensive for some questions</label>
+        <input type="radio" id="q6c" name="q10" value="c"><label for="q6c">Observational studies cannot provide any useful information</label>
+      </div>
+      <div class="quiz-q">
+        What is a tradeoff when using an observational design instead of an RCT?
+      </div>
+      <div class="quiz-choices">
+        <input type="radio" id="q6d" name="q11" value="a"><label for="q6d">Greater risk of confounding and bias</label>
+        <input type="radio" id="q6e" name="q11" value="b"><label for="q6e">Stronger ability to infer causality</label>
+        <input type="radio" id="q6f" name="q11" value="c"><label for="q6f">No need for statistical analysis</label>
+      </div>
+    </form>
+    <div class="footer">
+      <button id="checkL6">Check answers</button>
+      <button id="resetL6" class="btn reset-btn">Reset</button>
+      <span id="l6Msg" class="small"></span>
+    </div>
+    <details style="margin-top:8px"><summary>Tip for instructors</summary>
+      <div class="note">This replaces the previous open-ended reflection prompt. Use this for formative or summative assessment.</div>
+    </details>
+  </section>
   <footer class="small" style="margin-top:18px;color:#94a3b8">
-    Built for Canvas embedding (GitHub Pages). Fully client‑side; accessible via keyboard; no tracking. All answers are multiple choice for easy grading.
+    Built for Canvas embedding (GitHub Pages). Fully client‑side; accessible via keyboard; no tracking. Reflection is now a multiple-choice quiz.
   </footer>
 </div>
 <script>
 (function(){
-  let score = 0, level = 1, maxLevel = 5;
+  let score = 0, level = 1, maxLevel = 6;
   const scoreEl = document.getElementById('score');
   const levelEl = document.getElementById('levelNow');
   const barEl = document.getElementById('bar');
@@ -401,8 +430,9 @@
     let c9 = (q9 && q9.value === 'a');
     let msg = document.getElementById('l5Msg');
     if(c8 && c9){
-      msg.innerHTML = `<span class="good">Quiz complete! 🎉</span>`;
+      msg.innerHTML = `<span class="good">Correct! Next: Reflection Quiz</span>`;
       bump(5);
+      setLevel(6);
     } else {
       msg.innerHTML = `<span class="bad">Try again.</span>`;
       bump(-1);
@@ -411,6 +441,26 @@
   document.getElementById('resetL5').onclick = function(){
     document.getElementById('quiz5').reset();
     document.getElementById('l5Msg').textContent='';
+  };
+
+  // Level 6 (Reflection Quiz)
+  document.getElementById('checkL6').onclick = function(){
+    let q10 = document.querySelector('input[name="q10"]:checked');
+    let q11 = document.querySelector('input[name="q11"]:checked');
+    let c10 = (q10 && q10.value === 'b');
+    let c11 = (q11 && q11.value === 'a');
+    let msg = document.getElementById('l6Msg');
+    if(c10 && c11){
+      msg.innerHTML = `<span class="good">Great job! You understand the trade-offs of observational vs. RCT designs. 🎉</span>`;
+      bump(5);
+    } else {
+      msg.innerHTML = `<span class="bad">Try again.</span>`;
+      bump(-1);
+    }
+  };
+  document.getElementById('resetL6').onclick = function(){
+    document.getElementById('quiz6').reset();
+    document.getElementById('l6Msg').textContent='';
   };
 
   // Initial HUD
