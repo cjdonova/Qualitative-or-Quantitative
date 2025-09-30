@@ -2,43 +2,423 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Quant or Qual? — Minimal Demo</title>
+  <title>Quant or Qual? — Interactive Quiz Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    .level { display: none; }
-    .level.active { display: block; }
-    .card { display: block; }
+    :root {
+      --font-main:'Inter',system-ui,sans-serif;
+      --bg:#f7fafc;
+      --panel:#fff;
+      --ink:#23272f;
+      --muted:#7b8794;
+      --brand:#2563eb;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --card:#f1f5f9;
+      --accent:#e0e7ef;
+      --focus:#bae6fd;
+      --shadow:0 6px 24px rgba(80,170,250,0.10), 0 2px 8px rgba(0,0,0,0.08);
+      --progress:#60a5fa;
+      --progress-bg:#e0e7ef;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-main);
+    }
+    .wrap {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin: 0 0 8px 0;
+    }
+    .badge {
+      background: var(--accent);
+      border: 1px solid #cbd5e1;
+      color: var(--brand);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: .3px;
+      margin-left:8px;
+    }
+    .small {
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .pill {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: var(--focus);
+      border: 1px dashed #cbd5e1;
+      display:inline-block;
+      margin-right:8px;
+    }
+    .progress {
+      width:100%;
+      height:14px;
+      border-radius:999px;
+      background:var(--progress-bg);
+      overflow:hidden;
+      border:1px solid #cbd5e1;
+      margin:12px 0 24px 0;
+      position:relative;
+    }
+    .progress > div {
+      height:100%;
+      width:0;
+      background:linear-gradient(90deg,#60a5fa,#22c55e);
+      transition:width .5s;
+    }
+    .level { display:none; }
+    .level.active { display:block; }
+    .card {
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+    .quiz-q {
+      font-size:1.1rem;
+      margin-bottom:8px;
+    }
+    .quiz-choices {
+      margin-bottom:12px;
+    }
+    .quiz-choices label {
+      display:block;
+      padding:7px 10px;
+      background:var(--accent);
+      border-radius:8px;
+      margin-bottom:6px;
+      cursor:pointer;
+      border:1px solid #cbd5e1;
+      transition:.15s;
+    }
+    .quiz-choices input[type=radio]:focus + label,
+    .quiz-choices label:hover {
+      border-color:var(--brand);
+      background:var(--focus);
+    }
+    .quiz-choices input[type=radio] {
+      display:none;
+    }
+    .quiz-choices input[type=radio]:checked + label {
+      border-color:var(--ok);
+      background:var(--ok);
+      color:#fff;
+    }
+    .footer {
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .good { color: var(--ok); }
+    .bad { color: var(--bad); }
+    .hint { color: var(--brand);}
+    .score { font-weight: 700; }
+    .pill { font-size:15px;}
+    button, .btn {
+      cursor:pointer;
+      border:1px solid #cbd5e1;
+      background:var(--accent);
+      color:var(--ink);
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:16px;
+      transition:.15s;
+    }
+    button:hover,.btn:hover{
+      border-color:var(--progress);
+      background:var(--focus);
+    }
+    .reset-btn {
+      margin-left: auto;
+    }
   </style>
 </head>
 <body>
-<div class="card" id="level1card">
-  <h2>Level 1</h2>
-  <button id="completeL1">Complete Level 1</button>
+<div class="wrap">
+  <header>
+    <h1>Quant or Qual? <span class="badge">Quiz Edition</span></h1>
+    <div class="small">Practice distinguishing quantitative vs qualitative research, variables, designs, and sampling with interactive questions.</div>
+    <div style="margin-top:8px;">
+      <span class="pill">Score: <span id="score">0</span></span>
+      <span class="pill">Level: <span id="levelNow">1</span>/5</span>
+    </div>
+  </header>
+  <div class="progress"><div id="bar"></div></div>
+  <!-- Level 1: Sorting Challenge -->
+  <section class="card level active" id="lvl1">
+    <h2>Level 1 — Sorting Challenge</h2>
+    <div class="small">For each statement, select whether it fits Quantitative, Qualitative, or Both.</div>
+    <form id="quiz1"></form>
+    <div class="footer">
+      <button id="checkL1">Check answers</button>
+      <button id="resetL1" class="btn reset-btn">Reset</button>
+      <span id="l1Msg" class="small"></span>
+    </div>
+  </section>
+  <!-- Level 2: Research Pathway Quiz -->
+  <section class="card level" id="lvl2">
+    <h2>Level 2 — Research Pathway Quiz</h2>
+    <form id="quiz2">
+      <div class="quiz-q">Which of the following is typically the <strong>first</strong> step in a quantitative research study?</div>
+      <div class="quiz-choices">
+        <input type="radio" id="q2a" name="q2" value="a"><label for="q2a">Collect data using appropriate instruments</label>
+        <input type="radio" id="q2b" name="q2" value="b"><label for="q2b">Identify a research problem or question</label>
+        <input type="radio" id="q2c" name="q2" value="c"><label for="q2c">Analyze the data using statistical techniques</label>
+      </div>
+      <div class="quiz-q">What is the main purpose of reviewing literature in research?</div>
+      <div class="quiz-choices">
+        <input type="radio" id="q2d" name="q3" value="a"><label for="q2d">To define hypotheses and understand context</label>
+        <input type="radio" id="q2e" name="q3" value="b"><label for="q2e">To collect primary data</label>
+        <input type="radio" id="q2f" name="q3" value="c"><label for="q2f">To publish results</label>
+      </div>
+    </form>
+    <div class="footer">
+      <button id="checkL2">Check answers</button>
+      <button id="resetL2" class="btn reset-btn">Reset</button>
+      <span id="l2Msg" class="small"></span>
+    </div>
+  </section>
+  <!-- Level 3: Variable Detective Quiz -->
+  <section class="card level" id="lvl3">
+    <h2>Level 3 — Variable Detective</h2>
+    <form id="quiz3">
+      <div class="quiz-q">In the question: <em>“Does <strong>housing instability</strong> affect rates of <strong>depression</strong> among low‑income adults?”</em><br> What is the <strong>independent variable</strong>?</div>
+      <div class="quiz-choices">
+        <input type="radio" id="q3a" name="q4" value="a"><label for="q3a">Depression</label>
+        <input type="radio" id="q3b" name="q4" value="b"><label for="q3b">Housing instability</label>
+        <input type="radio" id="q3c" name="q4" value="c"><label for="q3c">Low-income status</label>
+      </div>
+      <div class="quiz-q">What type of variable is <strong>depression</strong> in this context?</div>
+      <div class="quiz-choices">
+        <input type="radio" id="q3d" name="q5" value="a"><label for="q3d">Independent variable</label>
+        <input type="radio" id="q3e" name="q5" value="b"><label for="q3e">Dependent variable</label>
+        <input type="radio" id="q3f" name="q5" value="c"><label for="q3f">Confounder</label>
+      </div>
+    </form>
+    <div class="footer">
+      <button id="checkL3">Check answers</button>
+      <button id="resetL3" class="btn reset-btn">Reset</button>
+      <span id="l3Msg" class="small"></span>
+    </div>
+  </section>
+  <!-- Level 4: Study Design Quiz -->
+  <section class="card level" id="lvl4">
+    <h2>Level 4 — Study Design Showdown</h2>
+    <form id="quiz4">
+      <div class="quiz-q">A survey of 1,000 teens about sleep habits and anxiety levels is which type of study?</div>
+      <div class="quiz-choices">
+        <input type="radio" id="q4a" name="q6" value="a"><label for="q4a">Cross-Sectional</label>
+        <input type="radio" id="q4b" name="q6" value="b"><label for="q4b">Cohort</label>
+        <input type="radio" id="q4c" name="q6" value="c"><label for="q4c">Case-Control</label>
+      </div>
+      <div class="quiz-q">A randomized controlled trial primarily provides:</div>
+      <div class="quiz-choices">
+        <input type="radio" id="q4d" name="q7" value="a"><label for="q4d">Strong internal validity</label>
+        <input type="radio" id="q4e" name="q7" value="b"><label for="q4e">Observational data</label>
+        <input type="radio" id="q4f" name="q7" value="c"><label for="q4f">Long-term incidence rates</label>
+      </div>
+    </form>
+    <div class="footer">
+      <button id="checkL4">Check answers</button>
+      <button id="resetL4" class="btn reset-btn">Reset</button>
+      <span id="l4Msg" class="small"></span>
+    </div>
+  </section>
+  <!-- Level 5: Sampling Quiz -->
+  <section class="card level" id="lvl5">
+    <h2>Level 5 — Sampling Sprint</h2>
+    <form id="quiz5">
+      <div class="quiz-q">Which sampling strategy is <strong>probability-based</strong>?</div>
+      <div class="quiz-choices">
+        <input type="radio" id="q5a" name="q8" value="a"><label for="q5a">Convenience sampling</label>
+        <input type="radio" id="q5b" name="q8" value="b"><label for="q5b">Simple random sampling</label>
+        <input type="radio" id="q5c" name="q8" value="c"><label for="q5c">Snowball sampling</label>
+      </div>
+      <div class="quiz-q">What is a limitation of <strong>stratified sampling</strong>?</div>
+      <div class="quiz-choices">
+        <input type="radio" id="q5d" name="q9" value="a"><label for="q5d">Requires information about strata</label>
+        <input type="radio" id="q5e" name="q9" value="b"><label for="q5e">High bias</label>
+        <input type="radio" id="q5f" name="q9" value="c"><label for="q5f">Cannot generalize</label>
+      </div>
+    </form>
+    <div class="footer">
+      <button id="checkL5">Check answers</button>
+      <button id="resetL5" class="btn reset-btn">Reset</button>
+      <span id="l5Msg" class="small"></span>
+    </div>
+  </section>
+  <footer class="small" style="margin-top:18px;color:#94a3b8">
+    Built for Canvas embedding (GitHub Pages). Fully client‑side; accessible via keyboard; no tracking. All answers are multiple choice for easy grading.
+  </footer>
 </div>
-<section class="level" id="lvl2">
-  <h2>Level 2</h2>
-  <button id="completeL2">Complete Level 2</button>
-</section>
-<section class="level" id="lvl3">
-  <h2>Level 3</h2>
-  <button id="completeL3">Complete Level 3</button>
-</section>
 <script>
-let level = Number(localStorage.getItem('qoq:level') || 1);
-function setLevel(n) {
-  level = Math.min(3, Math.max(1, n));
-  localStorage.setItem('qoq:level', level);
+(function(){
+  let score = 0, level = 1, maxLevel = 5;
+  const scoreEl = document.getElementById('score');
+  const levelEl = document.getElementById('levelNow');
+  const barEl = document.getElementById('bar');
+  function bump(points){ score = Math.max(0, score + points); scoreEl.textContent = score;}
+  function setLevel(n){
+    level = Math.min(maxLevel, Math.max(1, n));
+    levelEl.textContent = level;
+    barEl.style.width = ((level-1)/(maxLevel))*100 + '%';
+    revealLevels();
+  }
+  function revealLevels(){
+    for(let i=1;i<=maxLevel;i++){
+      let sec = document.getElementById('lvl'+i);
+      if(sec) sec.classList.toggle('active', i===level);
+    }
+  }
+  // Level 1
+  const l1Questions = [
+    {text:'Focuses on measurable variables using numerical data', ans:'Quantitative'},
+    {text:'Explores lived experiences through open-ended interviews', ans:'Qualitative'},
+    {text:'Results are often reported as averages, percentages, or correlations', ans:'Quantitative'},
+    {text:'Seeks to understand how and why phenomena occur in specific contexts', ans:'Qualitative'},
+    {text:'May include charts, graphs, and statistical significance testing', ans:'Quantitative'},
+    {text:'Combines numbers with open-ended responses in the same study', ans:'Both'},
+    {text:'Uses visual summaries of qualitative themes', ans:'Both'}
+  ];
+  const bins = ['Quantitative','Qualitative','Both'];
+  function renderQuiz1(){
+    const f = document.getElementById('quiz1');
+    f.innerHTML = '';
+    l1Questions.forEach((q,i)=>{
+      f.innerHTML += `
+      <div class="quiz-q">${q.text}</div>
+      <div class="quiz-choices">
+        ${bins.map(bin => `<input type="radio" id="l1${i}_${bin}" name="l1_${i}" value="${bin}">
+        <label for="l1${i}_${bin}">${bin}</label>`).join('')}
+      </div>`;
+    });
+  }
+  renderQuiz1();
+
+  document.getElementById('checkL1').onclick = function(){
+    let correct = 0;
+    l1Questions.forEach((q,i)=>{
+      let checked = document.querySelector(`input[name="l1_${i}"]:checked`);
+      if(checked && checked.value === q.ans) correct++;
+    });
+    let msg = document.getElementById('l1Msg');
+    if(correct === l1Questions.length){
+      msg.innerHTML = `<span class="good">All correct!</span>`;
+      bump(5);
+      setLevel(2);
+    } else {
+      msg.innerHTML = `<span class="bad">${correct}/${l1Questions.length} correct. Try again!</span>`;
+      bump(-1);
+    }
+  };
+  document.getElementById('resetL1').onclick = function(){
+    renderQuiz1();
+    document.getElementById('l1Msg').textContent='';
+  };
+
+  // Level 2
+  document.getElementById('checkL2').onclick = function(){
+    let q2 = document.querySelector('input[name="q2"]:checked');
+    let q3 = document.querySelector('input[name="q3"]:checked');
+    let c2 = (q2 && q2.value === 'b');
+    let c3 = (q3 && q3.value === 'a');
+    let msg = document.getElementById('l2Msg');
+    if(c2 && c3){
+      msg.innerHTML = `<span class="good">Correct!</span>`;
+      bump(5);
+      setLevel(3);
+    } else {
+      msg.innerHTML = `<span class="bad">Try again.</span>`;
+      bump(-1);
+    }
+  };
+  document.getElementById('resetL2').onclick = function(){
+    document.getElementById('quiz2').reset();
+    document.getElementById('l2Msg').textContent='';
+  };
+
+  // Level 3
+  document.getElementById('checkL3').onclick = function(){
+    let q4 = document.querySelector('input[name="q4"]:checked');
+    let q5 = document.querySelector('input[name="q5"]:checked');
+    let c4 = (q4 && q4.value === 'b');
+    let c5 = (q5 && q5.value === 'b');
+    let msg = document.getElementById('l3Msg');
+    if(c4 && c5){
+      msg.innerHTML = `<span class="good">Correct!</span>`;
+      bump(5);
+      setLevel(4);
+    } else {
+      msg.innerHTML = `<span class="bad">Try again.</span>`;
+      bump(-1);
+    }
+  };
+  document.getElementById('resetL3').onclick = function(){
+    document.getElementById('quiz3').reset();
+    document.getElementById('l3Msg').textContent='';
+  };
+
+  // Level 4
+  document.getElementById('checkL4').onclick = function(){
+    let q6 = document.querySelector('input[name="q6"]:checked');
+    let q7 = document.querySelector('input[name="q7"]:checked');
+    let c6 = (q6 && q6.value === 'a');
+    let c7 = (q7 && q7.value === 'a');
+    let msg = document.getElementById('l4Msg');
+    if(c6 && c7){
+      msg.innerHTML = `<span class="good">Correct!</span>`;
+      bump(5);
+      setLevel(5);
+    } else {
+      msg.innerHTML = `<span class="bad">Try again.</span>`;
+      bump(-1);
+    }
+  };
+  document.getElementById('resetL4').onclick = function(){
+    document.getElementById('quiz4').reset();
+    document.getElementById('l4Msg').textContent='';
+  };
+
+  // Level 5
+  document.getElementById('checkL5').onclick = function(){
+    let q8 = document.querySelector('input[name="q8"]:checked');
+    let q9 = document.querySelector('input[name="q9"]:checked');
+    let c8 = (q8 && q8.value === 'b');
+    let c9 = (q9 && q9.value === 'a');
+    let msg = document.getElementById('l5Msg');
+    if(c8 && c9){
+      msg.innerHTML = `<span class="good">Quiz complete! 🎉</span>`;
+      bump(5);
+    } else {
+      msg.innerHTML = `<span class="bad">Try again.</span>`;
+      bump(-1);
+    }
+  };
+  document.getElementById('resetL5').onclick = function(){
+    document.getElementById('quiz5').reset();
+    document.getElementById('l5Msg').textContent='';
+  };
+
+  // Initial HUD
+  scoreEl.textContent = score;
+  levelEl.textContent = level;
+  barEl.style.width = ((level-1)/(maxLevel))*100 + '%';
   revealLevels();
-}
-function revealLevels() {
-  document.getElementById('level1card').style.display = (level === 1 ? '' : 'none');
-  document.getElementById('lvl2').classList.toggle('active', level === 2);
-  document.getElementById('lvl3').classList.toggle('active', level === 3);
-}
-// Simulate completing each level
-document.getElementById('completeL1').onclick = () => setLevel(2);
-document.getElementById('completeL2').onclick = () => setLevel(3);
-document.getElementById('completeL3').onclick = () => alert('Game complete!');
-revealLevels();
+})();
 </script>
 </body>
 </html>
